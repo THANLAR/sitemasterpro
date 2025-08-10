@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Financial Management - Site Master Pro</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">Financial Management</h1>
+                <p class="text-muted">Track project finances, expenses, and revenue</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary" onclick="refreshFinancials()">
+                    <i class="fas fa-sync-alt me-2"></i>Refresh
+                </button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#transactionModal">
+                    <i class="fas fa-plus me-2"></i>New Transaction
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-chart-bar me-2"></i>Reports
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="generateFinancialReport()">Financial Summary</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="generateBudgetReport()">Budget Analysis</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="generateCashFlowReport()">Cash Flow</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/reports">All Reports</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Overview Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start border-success border-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-xs fw-bold text-success text-uppercase mb-1">Total Revenue</div>
+                                <div class="h5 mb-0 fw-bold" id="totalRevenue">$0</div>
+                                <small class="text-muted">Across all projects</small>
+                            </div>
+                            <div class="ms-2">
+                                <i class="fas fa-chart-line fa-2x text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start border-danger border-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-xs fw-bold text-danger text-uppercase mb-1">Total Expenses</div>
+                                <div class="h5 mb-0 fw-bold" id="totalExpenses">$0</div>
+                                <small class="text-muted">All project costs</small>
+                            </div>
+                            <div class="ms-2">
+                                <i class="fas fa-chart-line-down fa-2x text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start border-info border-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-xs fw-bold text-info text-uppercase mb-1">Net Profit</div>
+                                <div class="h5 mb-0 fw-bold" id="netProfit">$0</div>
+                                <small class="text-muted">Revenue - Expenses</small>
+                            </div>
+                            <div class="ms-2">
+                                <i class="fas fa-calculator fa-2x text-info"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start border-warning border-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-xs fw-bold text-warning text-uppercase mb-1">Pending Approvals</div>
+                                <div class="h5 mb-0 fw-bold" id="pendingApprovals">0</div>
+                                <small class="text-muted">Transactions awaiting approval</small>
+                            </div>
+                            <div class="ms-2">
+                                <i class="fas fa-hourglass-half fa-2x text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Selector and Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="projectFilter" class="form-label">Project</label>
+                        <select class="form-select" id="projectFilter">
+                            <option value="">All Projects</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="transactionTypeFilter" class="form-label">Type</label>
+                        <select class="form-select" id="transactionTypeFilter">
+                            <option value="">All Types</option>
+                            <option value="EXPENSE">Expenses</option>
+                            <option value="REVENUE">Revenue</option>
+                            <option value="PAYMENT">Payments</option>
+                            <option value="RECEIPT">Receipts</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="categoryFilter" class="form-label">Category</label>
+                        <select class="form-select" id="categoryFilter">
+                            <option value="">All Categories</option>
+                            <option value="MATERIALS">Materials</option>
+                            <option value="LABOR">Labor</option>
+                            <option value="EQUIPMENT">Equipment</option>
+                            <option value="CLIENT_PAYMENT">Client Payment</option>
+                            <option value="OVERHEAD">Overhead</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="dateFrom" class="form-label">Date From</label>
+                        <input type="date" class="form-control" id="dateFrom">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="dateTo" class="form-label">Date To</label>
+                        <input type="date" class="form-control" id="dateTo">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100" onclick="loadTransactions()">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Tabs -->
+        <ul class="nav nav-tabs mb-4" id="financialTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="transactions-tab" data-bs-toggle="tab" data-bs-target="#transactions" 
+                        type="button" role="tab">
+                    <i class="fas fa-exchange-alt me-2"></i>Transactions
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" 
+                        type="button" role="tab">
+                    <i class="fas fa-chart-pie me-2"></i>Analytics
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="budget-tab" data-bs-toggle="tab" data-bs-target="#budget" 
+                        type="button" role="tab">
+                    <i class="fas fa-piggy-bank me-2"></i>Budget Tracking
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="approvals-tab" data-bs-toggle="tab" data-bs-target="#approvals" 
+                        type="button" role="tab">
+                    <i class="fas fa-check-circle me-2"></i>Approvals
+                    <span class="badge bg-warning ms-1" id="approvalsBadge" style="display: none;">0</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="financialTabContent">
+            <!-- Transactions Tab -->
+            <div class="tab-pane fade show active" id="transactions" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold text-primary">Financial Transactions</h6>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-success" onclick="importTransactions()">
+                                <i class="fas fa-upload me-2"></i>Import
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="exportTransactions()">
+                                <i class="fas fa-download me-2"></i>Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="transactionsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Category</th>
+                                        <th>Description</th>
+                                        <th>Project</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>User</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionsTableBody">
+                                    <tr>
+                                        <td colspan="9" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="text-muted mt-2 mb-0">Loading transactions...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <nav aria-label="Transactions pagination">
+                            <ul class="pagination justify-content-center mb-0" id="transactionsPagination">
+                                <!-- Pagination will be dynamically generated -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div class="tab-pane fade" id="analytics" role="tabpanel">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="m-0 fw-bold text-primary">Revenue vs Expenses Trend</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="revenueExpenseChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="m-0 fw-bold text-primary">Project Financial Performance</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="projectPerformanceChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="m-0 fw-bold text-primary">Expense Categories</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="expenseCategoriesChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="m-0 fw-bold text-primary">Key Metrics</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Profit Margin</span>
+                                        <span class="fw-bold" id="profitMargin">0%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" id="profitMarginBar"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Budget Utilization</span>
+                                        <span class="fw-bold" id="budgetUtilization">0%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-info" role="progressbar" id="budgetUtilizationBar"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Cash Flow</span>
+                                        <span class="fw-bold" id="cashFlow">$0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget Tracking Tab -->
+            <div class="tab-pane fade" id="budget" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="m-0 fw-bold text-primary">Project Budget Analysis</h6>
+                    </div>
+                    <div class="card-body" id="budgetAnalysis">
+                        <p class="text-muted text-center">Select a project to view budget analysis</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approvals Tab -->
+            <div class="tab-pane fade" id="approvals" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold text-primary">Pending Approvals</h6>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-success" onclick="bulkApprove()">
+                                <i class="fas fa-check-double me-2"></i>Bulk Approve
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="bulkReject()">
+                                <i class="fas fa-times me-2"></i>Bulk Reject
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="approvalsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>
+                                            <input type="checkbox" id="selectAllApprovals" onchange="toggleAllApprovals()">
+                                        </th>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Project</th>
+                                        <th>Amount</th>
+                                        <th>Requested By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="approvalsTableBody">
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4">
+                                            <p class="text-muted mb-0">Loading pending approvals...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Modal -->
+        <div class="modal fade" id="transactionModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-plus me-2"></i>
+                            <span id="transactionModalTitle">New Financial Transaction</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="transactionForm">
+                        <div class="modal-body">
+                            <input type="hidden" id="transactionId" name="id">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="transactionProject" class="form-label">Project *</label>
+                                    <select class="form-select" id="transactionProject" name="projectId" required>
+                                        <option value="">Select Project</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transactionType" class="form-label">Transaction Type *</label>
+                                    <select class="form-select" id="transactionType" name="transactionType" required>
+                                        <option value="">Select Type</option>
+                                        <option value="EXPENSE">Expense</option>
+                                        <option value="REVENUE">Revenue</option>
+                                        <option value="PAYMENT">Payment</option>
+                                        <option value="RECEIPT">Receipt</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transactionCategory" class="form-label">Category *</label>
+                                    <select class="form-select" id="transactionCategory" name="category" required>
+                                        <option value="">Select Category</option>
+                                        <option value="MATERIALS">Materials</option>
+                                        <option value="LABOR">Labor</option>
+                                        <option value="EQUIPMENT">Equipment</option>
+                                        <option value="CLIENT_PAYMENT">Client Payment</option>
+                                        <option value="OVERHEAD">Overhead</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transactionAmount" class="form-label">Amount ($) *</label>
+                                    <input type="number" class="form-control" id="transactionAmount" name="amount" 
+                                           step="0.01" min="0" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="transactionDescription" class="form-label">Description *</label>
+                                    <textarea class="form-control" id="transactionDescription" name="description" 
+                                              rows="3" required></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transactionReference" class="form-label">Reference Number</label>
+                                    <input type="text" class="form-control" id="transactionReference" name="referenceNumber">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transactionDate" class="form-label">Transaction Date</label>
+                                    <input type="datetime-local" class="form-control" id="transactionDate" name="transactionDate">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="saveTransactionBtn">
+                                <i class="fas fa-save me-2"></i>Save Transaction
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Details Modal -->
+        <div class="modal fade" id="transactionDetailsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Transaction Details
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="transactionDetailsBody">
+                        <!-- Transaction details will be loaded here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="editCurrentTransaction()">
+                            <i class="fas fa-edit me-2"></i>Edit Transaction
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial specific scripts -->
+    <div layout:fragment="scripts">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script th:src="@{/js/financials.js}"></script>
+        <script>
+            // Initialize financial page
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeFinancialPage();
+            });
+        </script>
+    </div>
+</body>
+</html>

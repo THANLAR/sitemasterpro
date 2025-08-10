@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head>
+    <title>Dashboard - Site Master Pro</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <div class="container-fluid py-4">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">Dashboard</h1>
+                    <p class="text-muted mb-0">Welcome back to Site Master Pro</p>
+                </div>
+                <div>
+                    <span class="badge bg-success fs-6">
+                        <i class="bi bi-wifi me-1"></i>
+                        <span id="connectionStatus">Connected</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Key Metrics Cards -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="icon-circle bg-primary bg-opacity-10">
+                                        <i class="bi bi-diagram-3 text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold h4 mb-0" id="totalProjects">0</div>
+                                    <div class="text-muted small">Total Projects</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="icon-circle bg-success bg-opacity-10">
+                                        <i class="bi bi-currency-dollar text-success"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold h4 mb-0" id="totalRevenue">₹0</div>
+                                    <div class="text-muted small">Total Revenue</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="icon-circle bg-warning bg-opacity-10">
+                                        <i class="bi bi-exclamation-triangle text-warning"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold h4 mb-0" id="lowStockItems">0</div>
+                                    <div class="text-muted small">Low Stock Items</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="icon-circle bg-info bg-opacity-10">
+                                        <i class="bi bi-clock-history text-info"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold h4 mb-0" id="pendingApprovals">0</div>
+                                    <div class="text-muted small">Pending Approvals</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Financial Overview Chart -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 pb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Financial Overview</h5>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <input type="radio" class="btn-check" name="chartPeriod" id="month" checked>
+                                    <label class="btn btn-outline-primary" for="month">Month</label>
+                                    
+                                    <input type="radio" class="btn-check" name="chartPeriod" id="quarter">
+                                    <label class="btn btn-outline-primary" for="quarter">Quarter</label>
+                                    
+                                    <input type="radio" class="btn-check" name="chartPeriod" id="year">
+                                    <label class="btn btn-outline-primary" for="year">Year</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="financialChart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-transparent border-0 pb-0">
+                            <h5 class="card-title mb-0">Recent Activities</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="activityFeed" class="activity-feed">
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-clock-history display-6 d-block mb-2"></i>
+                                    <small>Loading activities...</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Active Projects -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 pb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">Active Projects</h5>
+                                <a href="/api/projects/view" class="btn btn-sm btn-outline-primary">View All</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="activeProjectsList">
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-diagram-3 display-6 d-block mb-2"></i>
+                                    <small>Loading projects...</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Status Distribution -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 pb-0">
+                            <h5 class="card-title mb-0">Project Status Distribution</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="projectStatusChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Alerts -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-transparent border-0 pb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-bell me-2"></i>Real-time Alerts
+                                </h5>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="clearAlerts()">
+                                    <i class="bi bi-trash me-1"></i>Clear All
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="realTimeAlerts">
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-shield-check display-6 d-block mb-2 text-success"></i>
+                                    <small>All systems operational</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script th:src="@{/js/dashboard.js}"></script>
+        <script>
+            // Initialize dashboard when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeDashboard();
+            });
+        </script>
+    </th:block>
+</body>
+</html>

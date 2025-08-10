@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Master Pro - Construction Project Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="landing-page">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="#">
+                    <i class="fas fa-hard-hat me-2"></i>
+                    Site Master Pro
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#features">Features</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#benefits">Benefits</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#contact">Contact</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-outline-light ms-2" href="/login">Login</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="hero-section bg-gradient-primary text-white py-5">
+            <div class="container">
+                <div class="row align-items-center min-vh-100">
+                    <div class="col-lg-6">
+                        <h1 class="display-4 fw-bold mb-4">
+                            Streamline Your Construction Projects
+                        </h1>
+                        <p class="lead mb-4">
+                            Site Master Pro provides comprehensive project management, real-time financial tracking, 
+                            and inventory management for civil construction projects.
+                        </p>
+                        <div class="d-flex gap-3">
+                            <a href="/login" class="btn btn-light btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Get Started
+                            </a>
+                            <a href="#features" class="btn btn-outline-light btn-lg">
+                                Learn More
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="hero-image text-center">
+                            <i class="fas fa-building display-1 text-white-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 text-center mb-5">
+                        <h2 class="display-5 fw-bold">Key Features</h2>
+                        <p class="lead text-muted">Everything you need to manage construction projects efficiently</p>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="feature-card h-100 p-4 text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-users-cog fa-3x text-primary"></i>
+                            </div>
+                            <h4>Role-Based Access</h4>
+                            <p class="text-muted">
+                                8 distinct user roles with customized dashboards and permissions for 
+                                different stakeholders.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="feature-card h-100 p-4 text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-chart-line fa-3x text-success"></i>
+                            </div>
+                            <h4>Real-Time Financial Tracking</h4>
+                            <p class="text-muted">
+                                Monitor revenue, expenses, and profit margins with dynamic calculations 
+                                and budget variance analysis.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="feature-card h-100 p-4 text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-boxes fa-3x text-warning"></i>
+                            </div>
+                            <h4>Inventory Management</h4>
+                            <p class="text-muted">
+                                Complete stock tracking with automated alerts, supplier management, 
+                                and reorder point notifications.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="feature-card h-100 p-4 text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-project-diagram fa-3x text-info"></i>
+                            </div>
+                            <h4>Project Timeline</h4>
+                            <p class="text-muted">
+                                Track milestones, monitor progress, and receive alerts for 
+                                potential delays or issues.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="feature-card h-100 p-4 text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-file-alt fa-3x text-danger"></i>
+                            </div>
+                            <h4>Comprehensive Reports</h4>
+                            <p class="text-muted">
+                                Generate detailed reports with export capabilities for 
+                                compliance and business analysis.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="feature-card h-100 p-4 text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-shield-alt fa-3x text-secondary"></i>
+                            </div>
+                            <h4>Audit Trails</h4>
+                            <p class="text-muted">
+                                Complete activity logging and audit trails for accountability 
+                                and compliance requirements.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits Section -->
+        <section id="benefits" class="py-5 bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 text-center mb-5">
+                        <h2 class="display-5 fw-bold">Why Choose Site Master Pro?</h2>
+                        <p class="lead text-muted">Transform your construction project management</p>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-4">
+                        <div class="benefit-item">
+                            <h4><i class="fas fa-clock text-primary me-2"></i>Real-Time Updates</h4>
+                            <p>Get instant notifications and live data updates across all project activities.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="benefit-item">
+                            <h4><i class="fas fa-dollar-sign text-success me-2"></i>Cost Control</h4>
+                            <p>Monitor expenses and prevent budget overruns with automated alerts and analytics.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="benefit-item">
+                            <h4><i class="fas fa-mobile-alt text-info me-2"></i>Mobile Responsive</h4>
+                            <p>Access your data from anywhere with our mobile-optimized interface.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="benefit-item">
+                            <h4><i class="fas fa-lock text-warning me-2"></i>Secure Access</h4>
+                            <p>Enterprise-grade security with role-based permissions and JWT authentication.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="benefit-item">
+                            <h4><i class="fas fa-cogs text-secondary me-2"></i>Scalable Solution</h4>
+                            <p>Handle multiple projects simultaneously with our scalable architecture.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="benefit-item">
+                            <h4><i class="fas fa-headset text-danger me-2"></i>24/7 Support</h4>
+                            <p>Get round-the-clock support for your construction management needs.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 text-center">
+                        <h2 class="display-5 fw-bold mb-4">Ready to Get Started?</h2>
+                        <p class="lead text-muted mb-4">
+                            Transform your construction project management today with Site Master Pro.
+                        </p>
+                        <a href="/login" class="btn btn-primary btn-lg">
+                            <i class="fas fa-rocket me-2"></i>
+                            Start Your Journey
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-dark text-white py-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h5><i class="fas fa-hard-hat me-2"></i>Site Master Pro</h5>
+                        <p class="text-muted">
+                            Comprehensive construction project management solution for modern building projects.
+                        </p>
+                    </div>
+                    <div class="col-lg-6 text-lg-end">
+                        <p class="text-muted mb-0">
+                            &copy; 2024 Site Master Pro. All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

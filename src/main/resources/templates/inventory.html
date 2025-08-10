@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Inventory Management - Site Master Pro</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">Inventory Management</h1>
+                <p class="text-muted">Manage materials, suppliers, and stock transactions</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary" onclick="refreshInventory()">
+                    <i class="fas fa-sync-alt me-2"></i>Refresh
+                </button>
+                <div class="btn-group">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#materialModal">
+                        <i class="fas fa-plus me-2"></i>Add Material
+                    </button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#transactionModal">
+                        <i class="fas fa-exchange-alt me-2"></i>New Transaction
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start border-info border-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-xs fw-bold text-info text-uppercase mb-1">Total Materials</div>
+                                <div class="h5 mb-0 fw-bold" id="totalMaterials">-</div>
+                            </div>
+                            <div class="ms-2">
+                                <i class="fas fa-boxes fa-2x text-info"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start border-warning border-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-xs fw-bold text-warning text-uppercase mb-1">Low Stock</div>
+                                <div class="h5 mb-0 fw-bold" id="lowStockCount">-</div>
+                            </div>
+                            <div class="ms-2">
+                                <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start border-danger border-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-xs fw-bold text-danger text-uppercase mb-1">Reorder Needed</div>
+                                <div class="h5 mb-0 fw-bold" id="reorderCount">-</div>
+                            </div>
+                            <div class="ms-2">
+                                <i class="fas fa-cart-plus fa-2x text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start border-success border-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <div class="text-xs fw-bold text-success text-uppercase mb-1">Total Value</div>
+                                <div class="h5 mb-0 fw-bold" id="totalValue">-</div>
+                            </div>
+                            <div class="ms-2">
+                                <i class="fas fa-dollar-sign fa-2x text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Tabs -->
+        <ul class="nav nav-tabs mb-4" id="inventoryTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="materials-tab" data-bs-toggle="tab" data-bs-target="#materials" 
+                        type="button" role="tab">
+                    <i class="fas fa-box me-2"></i>Materials
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="transactions-tab" data-bs-toggle="tab" data-bs-target="#transactions" 
+                        type="button" role="tab">
+                    <i class="fas fa-exchange-alt me-2"></i>Transactions
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="suppliers-tab" data-bs-toggle="tab" data-bs-target="#suppliers" 
+                        type="button" role="tab">
+                    <i class="fas fa-truck me-2"></i>Suppliers
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="alerts-tab" data-bs-toggle="tab" data-bs-target="#alerts" 
+                        type="button" role="tab">
+                    <i class="fas fa-bell me-2"></i>Alerts
+                    <span class="badge bg-danger ms-1" id="alertsBadge" style="display: none;">0</span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="inventoryTabContent">
+            <!-- Materials Tab -->
+            <div class="tab-pane fade show active" id="materials" role="tabpanel">
+                <!-- Materials Filter -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="materialSearch" class="form-label">Search Materials</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" class="form-control" id="materialSearch" 
+                                           placeholder="Search by name or SKU...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="stockFilter" class="form-label">Stock Status</label>
+                                <select class="form-select" id="stockFilter">
+                                    <option value="">All Items</option>
+                                    <option value="low">Low Stock</option>
+                                    <option value="reorder">Needs Reorder</option>
+                                    <option value="normal">Normal Stock</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="materialSort" class="form-label">Sort By</label>
+                                <select class="form-select" id="materialSort">
+                                    <option value="name">Name</option>
+                                    <option value="sku">SKU</option>
+                                    <option value="currentStock">Stock Level</option>
+                                    <option value="unitPrice">Unit Price</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <button class="btn btn-outline-primary w-100" onclick="loadMaterials()">
+                                    <i class="fas fa-filter me-2"></i>Apply
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Materials Table -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold text-primary">Materials Inventory</h6>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-success" onclick="bulkImport()">
+                                <i class="fas fa-upload me-2"></i>Import
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="exportMaterials()">
+                                <i class="fas fa-download me-2"></i>Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="materialsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>SKU</th>
+                                        <th>Material Name</th>
+                                        <th>Unit</th>
+                                        <th>Current Stock</th>
+                                        <th>Min/Max Stock</th>
+                                        <th>Unit Price</th>
+                                        <th>Total Value</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="materialsTableBody">
+                                    <tr>
+                                        <td colspan="9" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="text-muted mt-2 mb-0">Loading materials...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Tab -->
+            <div class="tab-pane fade" id="transactions" role="tabpanel">
+                <!-- Transaction Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="transactionType" class="form-label">Transaction Type</label>
+                                <select class="form-select" id="transactionType">
+                                    <option value="">All Types</option>
+                                    <option value="STOCK_IN">Stock In</option>
+                                    <option value="STOCK_OUT">Stock Out</option>
+                                    <option value="ADJUSTMENT">Adjustment</option>
+                                    <option value="DAMAGE">Damage</option>
+                                    <option value="RETURN">Return</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="transactionProject" class="form-label">Project</label>
+                                <select class="form-select" id="transactionProject">
+                                    <option value="">All Projects</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="transactionDateFrom" class="form-label">Date From</label>
+                                <input type="date" class="form-control" id="transactionDateFrom">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="transactionDateTo" class="form-label">Date To</label>
+                                <input type="date" class="form-control" id="transactionDateTo">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transactions Table -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold text-primary">Transaction History</h6>
+                        <button class="btn btn-sm btn-outline-primary" onclick="exportTransactions()">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="transactionsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Material</th>
+                                        <th>Project</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Total Amount</th>
+                                        <th>User</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionsTableBody">
+                                    <tr>
+                                        <td colspan="9" class="text-center py-4">
+                                            <p class="text-muted mb-0">Select filters and click load to view transactions</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suppliers Tab -->
+            <div class="tab-pane fade" id="suppliers" role="tabpanel">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold text-primary">Suppliers</h6>
+                        <button class="btn btn-sm btn-primary" onclick="addSupplier()">
+                            <i class="fas fa-plus me-2"></i>Add Supplier
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="suppliersContainer">
+                            <p class="text-muted text-center">Loading suppliers...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts Tab -->
+            <div class="tab-pane fade" id="alerts" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="m-0 fw-bold text-warning">Low Stock Alerts</h6>
+                            </div>
+                            <div class="card-body" id="lowStockAlerts">
+                                <p class="text-muted text-center">Loading alerts...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="m-0 fw-bold text-danger">Reorder Alerts</h6>
+                            </div>
+                            <div class="card-body" id="reorderAlerts">
+                                <p class="text-muted text-center">Loading alerts...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Material Modal -->
+        <div class="modal fade" id="materialModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-box me-2"></i>
+                            <span id="materialModalTitle">Add New Material</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="materialForm">
+                        <div class="modal-body">
+                            <input type="hidden" id="materialId" name="id">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="materialName" class="form-label">Material Name *</label>
+                                    <input type="text" class="form-control" id="materialName" name="name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="materialSku" class="form-label">SKU *</label>
+                                    <input type="text" class="form-control" id="materialSku" name="sku" required>
+                                </div>
+                                <div class="col-12">
+                                    <label for="materialDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="materialDescription" name="description" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="materialUnit" class="form-label">Unit *</label>
+                                    <select class="form-select" id="materialUnit" name="unit" required>
+                                        <option value="">Select Unit</option>
+                                        <option value="piece">Piece</option>
+                                        <option value="kg">Kilogram</option>
+                                        <option value="meter">Meter</option>
+                                        <option value="liter">Liter</option>
+                                        <option value="bag">Bag</option>
+                                        <option value="box">Box</option>
+                                        <option value="roll">Roll</option>
+                                        <option value="sheet">Sheet</option>
+                                        <option value="cubic meter">Cubic Meter</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="materialUnitPrice" class="form-label">Unit Price ($) *</label>
+                                    <input type="number" class="form-control" id="materialUnitPrice" name="unitPrice" 
+                                           step="0.01" min="0" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="materialCurrentStock" class="form-label">Current Stock</label>
+                                    <input type="number" class="form-control" id="materialCurrentStock" name="currentStock" 
+                                           step="0.01" min="0" value="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="materialMinStock" class="form-label">Minimum Stock</label>
+                                    <input type="number" class="form-control" id="materialMinStock" name="minimumStock" 
+                                           step="0.01" min="0" value="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="materialMaxStock" class="form-label">Maximum Stock</label>
+                                    <input type="number" class="form-control" id="materialMaxStock" name="maximumStock" 
+                                           step="0.01" min="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="materialReorderPoint" class="form-label">Reorder Point</label>
+                                    <input type="number" class="form-control" id="materialReorderPoint" name="reorderPoint" 
+                                           step="0.01" min="0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="materialSupplier" class="form-label">Primary Supplier</label>
+                                    <select class="form-select" id="materialSupplier" name="supplierId">
+                                        <option value="">Select Supplier</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" id="materialIsActive" name="isActive" checked>
+                                        <label class="form-check-label" for="materialIsActive">
+                                            Active Material
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="saveMaterialBtn">
+                                <i class="fas fa-save me-2"></i>Save Material
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Modal -->
+        <div class="modal fade" id="transactionModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-exchange-alt me-2"></i>
+                            New Inventory Transaction
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="transactionForm">
+                        <div class="modal-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="transactionMaterial" class="form-label">Material *</label>
+                                    <select class="form-select" id="transactionMaterial" name="materialId" required>
+                                        <option value="">Select Material</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transactionProjectSelect" class="form-label">Project *</label>
+                                    <select class="form-select" id="transactionProjectSelect" name="projectId" required>
+                                        <option value="">Select Project</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transactionTypeSelect" class="form-label">Transaction Type *</label>
+                                    <select class="form-select" id="transactionTypeSelect" name="transactionType" required>
+                                        <option value="">Select Type</option>
+                                        <option value="STOCK_IN">Stock In</option>
+                                        <option value="STOCK_OUT">Stock Out</option>
+                                        <option value="ADJUSTMENT">Adjustment</option>
+                                        <option value="DAMAGE">Damage</option>
+                                        <option value="RETURN">Return</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transactionSupplier" class="form-label">Supplier</label>
+                                    <select class="form-select" id="transactionSupplier" name="supplierId">
+                                        <option value="">Select Supplier (if applicable)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="transactionQuantity" class="form-label">Quantity *</label>
+                                    <input type="number" class="form-control" id="transactionQuantity" name="quantity" 
+                                           step="0.01" min="0.01" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="transactionUnitPrice" class="form-label">Unit Price ($) *</label>
+                                    <input type="number" class="form-control" id="transactionUnitPrice" name="unitPrice" 
+                                           step="0.01" min="0" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="transactionTotal" class="form-label">Total Amount ($)</label>
+                                    <input type="text" class="form-control" id="transactionTotal" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transactionReference" class="form-label">Reference Number</label>
+                                    <input type="text" class="form-control" id="transactionReference" name="referenceNumber">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transactionDate" class="form-label">Transaction Date</label>
+                                    <input type="datetime-local" class="form-control" id="transactionDate" name="transactionDate">
+                                </div>
+                                <div class="col-12">
+                                    <label for="transactionNotes" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="transactionNotes" name="notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="saveTransactionBtn">
+                                <i class="fas fa-save me-2"></i>Save Transaction
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory specific scripts -->
+    <div layout:fragment="scripts">
+        <script th:src="@{/js/inventory.js}"></script>
+        <script>
+            // Initialize inventory page
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeInventoryPage();
+            });
+        </script>
+    </div>
+</body>
+</html>

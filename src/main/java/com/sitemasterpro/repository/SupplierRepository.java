@@ -1,0 +1,19 @@
+package com.sitemasterpro.repository;
+
+import com.sitemasterpro.entity.Supplier;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface SupplierRepository extends JpaRepository<Supplier, Long> {
+    List<Supplier> findByActiveTrue();
+    
+    @Query("SELECT s FROM Supplier s WHERE s.name LIKE %:name% AND s.active = true")
+    List<Supplier> findByNameContainingIgnoreCase(String name);
+    
+    @Query("SELECT s FROM Supplier s WHERE s.email = :email")
+    List<Supplier> findByEmail(String email);
+}

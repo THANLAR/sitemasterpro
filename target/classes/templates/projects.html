@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head>
+    <title>Projects - Site Master Pro</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <div class="container-fluid py-4">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">Projects</h1>
+                    <p class="text-muted mb-0">Manage your construction projects</p>
+                </div>
+                <div sec:authorize="hasAnyRole('SUPER_ADMIN', 'ADMIN')">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newProjectModal">
+                        <i class="bi bi-plus-circle me-1"></i>New Project
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter and Search Bar -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="searchProjects" placeholder="Search projects...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="PLANNING">Planning</option>
+                                <option value="IN_PROGRESS">In Progress</option>
+                                <option value="ON_HOLD">On Hold</option>
+                                <option value="COMPLETED">Completed</option>
+                                <option value="CANCELLED">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="sortBy">
+                                <option value="name">Sort by Name</option>
+                                <option value="startDate">Sort by Start Date</option>
+                                <option value="completion">Sort by Completion</option>
+                                <option value="contractValue">Sort by Contract Value</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Grid -->
+            <div class="row" id="projectsGrid">
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading projects...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Projects pagination" class="mt-4">
+                <ul class="pagination justify-content-center" id="projectsPagination">
+                    <!-- Pagination will be populated by JavaScript -->
+                </ul>
+            </nav>
+        </div>
+
+        <!-- New Project Modal -->
+        <div class="modal fade" id="newProjectModal" tabindex="-1" sec:authorize="hasAnyRole('SUPER_ADMIN', 'ADMIN')">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-plus-circle me-2"></i>New Project
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form id="newProjectForm">
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="projectName" class="form-label">Project Name *</label>
+                                    <input type="text" class="form-control" id="projectName" name="name" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="projectLocation" class="form-label">Location *</label>
+                                    <input type="text" class="form-control" id="projectLocation" name="location" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="projectDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="projectDescription" name="description" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="startDate" class="form-label">Start Date *</label>
+                                    <input type="date" class="form-control" id="startDate" name="startDate" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="endDate" class="form-label">Expected End Date</label>
+                                    <input type="date" class="form-control" id="endDate" name="endDate">
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="contractValue" class="form-label">Contract Value *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="number" class="form-control" id="contractValue" name="contractValue" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="budgetedCost" class="form-label">Budgeted Cost</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">₹</span>
+                                        <input type="number" class="form-control" id="budgetedCost" name="budgetedCost" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <span class="spinner-border spinner-border-sm d-none me-2" id="createProjectSpinner"></span>
+                                Create Project
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Details Modal -->
+        <div class="modal fade" id="projectDetailsModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="projectDetailsTitle">Project Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="projectDetailsContent">
+                        <!-- Content will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            let projects = [];
+            let filteredProjects = [];
+            let currentPage = 1;
+            const projectsPerPage = 9;
+
+            // Initialize projects page
+            document.addEventListener('DOMContentLoaded', function() {
+                loadProjects();
+                setupEventListeners();
+            });
+
+            function setupEventListeners() {
+                // Search functionality
+                document.getElementById('searchProjects').addEventListener('input', filterProjects);
+                document.getElementById('statusFilter').addEventListener('change', filterProjects);
+                document.getElementById('sortBy').addEventListener('change', sortProjects);
+
+                // New project form
+                document.getElementById('newProjectForm').addEventListener('submit', handleNewProject);
+            }
+
+            async function loadProjects() {
+                try {
+                    const response = await makeAuthenticatedRequest('/api/projects');
+                    projects = await response.json();
+                    filteredProjects = [...projects];
+                    sortProjects();
+                    renderProjects();
+                } catch (error) {
+                    console.error('Error loading projects:', error);
+                    showError('Failed to load projects. Please try again.');
+                }
+            }
+
+            function filterProjects() {
+                const searchTerm = document.getElementById('searchProjects').value.toLowerCase();
+                const statusFilter = document.getElementById('statusFilter').value;
+
+                filteredProjects = projects.filter(project => {
+                    const matchesSearch = project.name.toLowerCase().includes(searchTerm) || 
+                                        project.location.toLowerCase().includes(searchTerm);
+                    const matchesStatus = !statusFilter || project.status === statusFilter;
+                    
+                    return matchesSearch && matchesStatus;
+                });
+
+                currentPage = 1;
+                renderProjects();
+                renderPagination();
+            }
+
+            function sortProjects() {
+                const sortBy = document.getElementById('sortBy').value;
+
+                filteredProjects.sort((a, b) => {
+                    switch(sortBy) {
+                        case 'name':
+                            return a.name.localeCompare(b.name);
+                        case 'startDate':
+                            return new Date(a.startDate) - new Date(b.startDate);
+                        case 'completion':
+                            return b.completionPercentage - a.completionPercentage;
+                        case 'contractValue':
+                            return b.contractValue - a.contractValue;
+                        default:
+                            return 0;
+                    }
+                });
+
+                renderProjects();
+            }
+
+            function renderProjects() {
+                const grid = document.getElementById('projectsGrid');
+                const startIndex = (currentPage - 1) * projectsPerPage;
+                const endIndex = startIndex + projectsPerPage;
+                const projectsToShow = filteredProjects.slice(startIndex, endIndex);
+
+                if (projectsToShow.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <i class="bi bi-diagram-3 display-1 text-muted"></i>
+                                <h3 class="mt-3">No projects found</h3>
+                                <p class="text-muted">Try adjusting your search criteria</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = projectsToShow.map(project => createProjectCard(project)).join('');
+                renderPagination();
+            }
+
+            function createProjectCard(project) {
+                const statusBadge = getStatusBadge(project.status);
+                const progressColor = getProgressColor(project.completionPercentage);
+
+                return `
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title mb-0">${project.name}</h5>
+                                    ${statusBadge}
+                                </div>
+                                
+                                <p class="text-muted small mb-2">
+                                    <i class="bi bi-geo-alt me-1"></i>${project.location}
+                                </p>
+                                
+                                <p class="card-text small text-muted mb-3">${project.description || 'No description available'}</p>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                        <span>Progress</span>
+                                        <span>${project.completionPercentage}%</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-${progressColor}" style="width: ${project.completionPercentage}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row text-center border-top pt-3">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Contract Value</small>
+                                        <strong>₹${formatCurrency(project.contractValue)}</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Start Date</small>
+                                        <strong>${formatDate(project.startDate)}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer bg-transparent border-0">
+                                <div class="d-flex justify-content-between">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="viewProjectDetails(${project.id})">
+                                        <i class="bi bi-eye me-1"></i>View Details
+                                    </button>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="editProject(${project.id})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-outline-info btn-sm" onclick="viewProjectFinancials(${project.id})">
+                                            <i class="bi bi-graph-up"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function getStatusBadge(status) {
+                const badges = {
+                    'PLANNING': 'badge bg-secondary',
+                    'IN_PROGRESS': 'badge bg-primary',
+                    'ON_HOLD': 'badge bg-warning text-dark',
+                    'COMPLETED': 'badge bg-success',
+                    'CANCELLED': 'badge bg-danger'
+                };
+                
+                return `<span class="${badges[status] || 'badge bg-secondary'}">${status.replace('_', ' ')}</span>`;
+            }
+
+            function getProgressColor(percentage) {
+                if (percentage < 30) return 'danger';
+                if (percentage < 70) return 'warning';
+                return 'success';
+            }
+
+            function renderPagination() {
+                const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+                const pagination = document.getElementById('projectsPagination');
+
+                if (totalPages <= 1) {
+                    pagination.innerHTML = '';
+                    return;
+                }
+
+                let paginationHTML = `
+                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">Previous</a>
+                    </li>
+                `;
+
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                        paginationHTML += `
+                            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                                <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                            </li>
+                        `;
+                    } else if (i === currentPage - 3 || i === currentPage + 3) {
+                        paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    }
+                }
+
+                paginationHTML += `
+                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">Next</a>
+                    </li>
+                `;
+
+                pagination.innerHTML = paginationHTML;
+            }
+
+            function changePage(page) {
+                const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+                if (page >= 1 && page <= totalPages) {
+                    currentPage = page;
+                    renderProjects();
+                }
+            }
+
+            async function handleNewProject(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const projectData = Object.fromEntries(formData);
+                const spinner = document.getElementById('createProjectSpinner');
+                
+                try {
+                    spinner.classList.remove('d-none');
+                    
+                    const response = await makeAuthenticatedRequest('/api/projects', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(projectData)
+                    });
+                    
+                    if (response.ok) {
+                        const newProject = await response.json();
+                        projects.push(newProject);
+                        filterProjects();
+                        
+                        // Close modal and reset form
+                        bootstrap.Modal.getInstance(document.getElementById('newProjectModal')).hide();
+                        e.target.reset();
+                        
+                        showSuccess('Project created successfully!');
+                    } else {
+                        throw new Error('Failed to create project');
+                    }
+                } catch (error) {
+                    console.error('Error creating project:', error);
+                    showError('Failed to create project. Please try again.');
+                } finally {
+                    spinner.classList.add('d-none');
+                }
+            }
+
+            async function viewProjectDetails(projectId) {
+                try {
+                    const response = await makeAuthenticatedRequest(`/api/projects/${projectId}`);
+                    const project = await response.json();
+                    
+                    document.getElementById('projectDetailsTitle').textContent = project.name;
+                    document.getElementById('projectDetailsContent').innerHTML = createProjectDetailsContent(project);
+                    
+                    new bootstrap.Modal(document.getElementById('projectDetailsModal')).show();
+                } catch (error) {
+                    console.error('Error loading project details:', error);
+                    showError('Failed to load project details.');
+                }
+            }
+
+            function createProjectDetailsContent(project) {
+                return `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Project Information</h6>
+                            <table class="table table-sm">
+                                <tr><td><strong>Name:</strong></td><td>${project.name}</td></tr>
+                                <tr><td><strong>Location:</strong></td><td>${project.location}</td></tr>
+                                <tr><td><strong>Status:</strong></td><td>${getStatusBadge(project.status)}</td></tr>
+                                <tr><td><strong>Start Date:</strong></td><td>${formatDate(project.startDate)}</td></tr>
+                                <tr><td><strong>End Date:</strong></td><td>${project.endDate ? formatDate(project.endDate) : 'Not set'}</td></tr>
+                                <tr><td><strong>Completion:</strong></td><td>${project.completionPercentage}%</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Financial Summary</h6>
+                            <table class="table table-sm">
+                                <tr><td><strong>Contract Value:</strong></td><td>₹${formatCurrency(project.contractValue)}</td></tr>
+                                <tr><td><strong>Budgeted Cost:</strong></td><td>₹${formatCurrency(project.budgetedCost)}</td></tr>
+                                <tr><td><strong>Actual Cost:</strong></td><td>₹${formatCurrency(project.actualCost)}</td></tr>
+                                <tr><td><strong>Actual Revenue:</strong></td><td>₹${formatCurrency(project.actualRevenue)}</td></tr>
+                                <tr><td><strong>Profit Margin:</strong></td><td>${project.calculateProfitMargin || 0}%</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    ${project.description ? `<div class="mt-3"><h6>Description</h6><p>${project.description}</p></div>` : ''}
+                `;
+            }
+
+            function resetFilters() {
+                document.getElementById('searchProjects').value = '';
+                document.getElementById('statusFilter').value = '';
+                document.getElementById('sortBy').value = 'name';
+                filterProjects();
+            }
+
+            function editProject(projectId) {
+                // Implement edit functionality
+                showInfo('Edit functionality will be implemented soon.');
+            }
+
+            function viewProjectFinancials(projectId) {
+                // Redirect to financial view for this project
+                window.location.href = `/api/financial/view?projectId=${projectId}`;
+            }
+        </script>
+    </th:block>
+</body>
+</html>
